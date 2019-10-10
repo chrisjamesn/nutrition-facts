@@ -1,0 +1,22 @@
+<?php
+echo "<html>
+<head>
+<title>Nutrition Fact List</title>
+<meta charset=\"utf-8\">
+<link rel=\"stylesheet\" media=\"all\" href=\"../style.css\"/>
+</head>
+<body>
+    <div class=\"container\">
+    <h1><button onclick=\"homepage()\" title=\"The Chris Nutter Hub\">The Chris Nutter Hub</button></h1>
+    </div>
+    <div class=\"container2\">
+    <h2><button onclick=\"nutritionFactList()\" title=\"Nutrition Fact List\">Nutrition Fact List</button></h2>
+    <script>
+    function homepage(){
+    window.location.href='http://www.thechrisnutterhub.com/index.html';
+};
+    function nutritionFactList(){
+    window.location.href='http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php';
+};
+</script>";
+    
