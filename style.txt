@@ -1,0 +1,111 @@
+body {
+	background-color: #98f5ff;
+}
+div.container{
+background-color: #98f5ff;
+}
+div.container h1{
+text-align: center;
+font-family: Times;
+font-size: 48px;
+font-style: normal;
+font-weight: normal;
+text-transform: none; 
+color: #458b00;
+background-color: #98f5ff;
+}
+div.container button{
+border: 10px solid #458b00;
+border-radius: 12px;
+text-align: center;
+font-family: Times;
+font-size: 48px;
+font-style: normal;
+font-weight: normal;
+text-transform: none; 
+color: #458b00;
+background-color: #98f5ff;
+cursor: pointer;
+}
+div.container2 h2{
+text-align: center;
+font-family: Times;
+font-size: 24px;
+font-style: normal;
+font-weight: normal;
+text-transform: none; 
+color: #458b00;
+background-color: #98f5ff;
+}
+div.container2 button{
+border: 10px solid #458b00;
+border-radius: 12px;
+text-align: center;
+font-family: Times;
+font-size: 24px;
+font-style: normal;
+font-weight: normal;
+text-transform: none; 
+color: #458b00;
+background-color: #98f5ff;
+cursor: pointer;
+}
+div.container3 button{
+    text-align: center;
+    font-size: 24px;
+    cursor: pointer;
+}
+div.container3 p{
+text-align: center;
+font-family: Times;
+font-size: 24px;
+font-style: normal;
+font-weight: normal;
+text-decoration: underline;
+text-transform: none; 
+color: #458b00;
+background-color: #98f5ff;
+}
+.container4 p{
+   text-align: center;
+   font-family: Times;
+   font-size: 10px;
+   font-style: normal;
+   font-weight: normal;
+   text-decoration: none;
+   text-transform: none;
+   color: black;
+   background-color: #98f5ff;
+}
+table, th, td {
+    border: 1px solid black;
+}
+div.errors {
+    background-color: white;
+    border: 10px red;
+    text-align: left;
+   font-family: Times;
+   font-size: 12px;
+   color: red;
+}
+div.errors li{
+    background-color: white;
+    border: 10px red;
+   text-align: left;
+   font-family: Times;
+   font-size: 12px;
+   color: red;
+}
+.container5 button{
+border: 15px solid #191970;
+border-radius: 18px;
+text-align: center;
+font-family: Times;
+font-size: 36px;
+font-style: normal;
+font-weight: normal;
+text-transform: none; 
+color: #191970;
+background-color: #98f5ff;
+cursor: pointer;
+}

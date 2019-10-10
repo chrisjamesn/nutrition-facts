@@ -1,0 +1,28 @@
+<?php include("header.php"); ?>
+<?php require_once("functions.php"); ?>
+<?php
+echo "<h3>New Item</h3>";
+echo "<form action=\"create.php\" method=\"post\">
+Food Item: <input type=\"text\" name=\"foodItem\" value=\"\"/><br>
+Food Group: <select name=\"foodGroup\">
+            <option value=\"\">Select...</option>
+            <option value=\"Fruit\">Fruit</option>
+            <option value=\"Vegetable\">Vegetable</option>
+            <option value=\"Grain\">Grain</option>
+            <option value=\"Protein\">Protein</option>
+            <option value=\"Dairy\">Dairy</option>
+            <option value=\"Recipe\">Recipe</option>
+            </select><br>
+Serving Size: <input type=\"text\" name=\"servingSize\" value=\"\"/><br>
+Calories: <input type=\"text\" name=\"calories\" value=\"\"/><br>
+Total Fat (g): <input type=\"text\" name=\"totalFat_g\" value=\"\"/><br>
+Cholesterol (mg): <input type=\"text\" name=\"cholesterol_mg\" value=\"\"/><br>
+Sodium (mg): <input type=\"text\" name=\"sodium_mg\" value=\"\"/><br>
+Potassium (mg): <input type=\"text\" name=\"potassium_mg\" value=\"\"/><br>
+Total Carbohydrates (g): <input type=\"text\" name=\"totalCarbohydrate_g\" value=\"\"/><br>
+Protein (g): <input type=\"text\" name=\"protein_g\" value=\"\"/><br>
+Source: <input type=\"text\" name=\"website\" value=\"\"/><br>
+<input type=\"submit\" name=\"submit\" value=\"Create\"/></form>";
+
+?>
+<?php include("footer.php"); ?>

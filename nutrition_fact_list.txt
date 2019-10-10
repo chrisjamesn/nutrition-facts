@@ -1,0 +1,105 @@
+<?php require_once("functions.php"); ?>
+<?php include("header.php"); ?>
+    <?php
+    $servername="";
+    $dbname="";
+    $dbusername="";
+    $dbpassword="";
+    
+    
+    
+    $mysqli= new mysqli($servername, $dbusername, $dbpassword, $dbname);
+    //Make sure the arguments in the above function are in this specific order!!
+    
+    if($mysqli->connect_errno){
+        echo "Failed to connect to the database: (". $mysqli->connect_errno. ")" . $mysqli->connect_error;
+        mysqli_close($mysqli);
+        exit;
+    }
+    
+    $sql ="SELECT * FROM nutritionFactList;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        //<form action=\"search.php\" method=\"post\">Search: <input name=\"searchTerm\" type=\"text\"></input><input type=\"submit\" value=\"&#128269;\"></form>
+        
+        echo "<nav>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php\">All</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Fruit\">Fruit</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Vegetable\">Vegetable</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Grain\">Grain</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Protein\">Protein</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Dairy\">Dairy</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Recipe\">Recipe</a>
+        </li>
+        </nav>
+        <table><tr>
+        <th>Food Item: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            <td>".$row["website"]. "</td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+            </td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+            </td>
+            </tr>";
+        }
+    
+            
+        echo "</table>
+        <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/new.php\">Add New Item</a><br>
+        </div>
+        <div class=\"container2\">
+        <button onclick=\"calculate()\" title=\"Calculate\">Calculate</button>
+        <script>
+        function calculate(){
+            window.location.href='http://www.thechrisnutterhub.com/nutrition_facts/foodSum/foodSumIndex.php';
+        };
+        </script>";
+        //<a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodSum/foodSumIndex.php\">Calculate</a>";
+    }else{
+        echo "No such list exists.";
+    }
+    
+    ?>
+    
+<?php include("footer.php"); ?>
+

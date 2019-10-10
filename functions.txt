@@ -1,0 +1,925 @@
+<?php
+//Escape functions
+function u($string=""){
+    return urlencode($string);
+}
+function h($string=""){
+    return htmlspecialchars($string);
+}
+
+function db_escape($connection, $string){
+    return mysqli_real_escape_string($connection, $string);
+}
+
+//Page redirect functions
+function page_redirect($location){
+   header("Location: " . $location);
+   exit();
+}
+function edit_page_redirect($location){
+   page_redirect("Location: " . $location);
+   exit();
+}
+
+//Validation functions
+function no_value($value){
+    if(empty($value)){
+    return !isset($value) || trim($value)==='';    
+    }
+    
+}
+function present_value($value){
+    return !no_value($value);
+}
+function greater_than($value, $min){
+    return $value > $min;
+}
+function less_than($value, $max){
+    return $value < $max;
+}
+
+//The SQL execution function
+function execute_sql($sql){
+    global $mysqli;
+    $res = mysqli_query($mysqli, $sql);
+    
+    if($res){
+    //echo "<script>window.location.href='http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php';</script>";   
+    page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php');
+    }else{
+    page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/new.php');
+    echo '<script language="javascript">';
+    echo 'alert("Insert attempt failed. Please try again.")';
+    echo '</script>';
+    }
+}
+
+//Regular expressions here
+//preg_match("/^[A-Z][a-zA-Z -]+$/", $value);
+//"/^[0-9]+(\\.[0-9]+)?$/"
+
+
+//Validation functions
+function validation_error($errors){ 
+    $output='';
+    if(!empty($errors)){
+        $output.= "</div>";
+        $output.= "<div class=\"errors\">";
+        $output.="Please fix the following errors";
+        foreach($errors as $statement){
+        $output .="<li>".$statement."</li><br>";
+        }
+        $output .="</div>";
+        $output .="<div class=\"container2\">";
+    }
+    echo $output;
+}
+
+function validate_item($record, $sql){
+    $letters="/^[a-zA-Z]+|([a-zA-Z]+\s+[a-zA-Z]+)+$/";
+    $numbers="/^([0-9]{1,4})(\.[0-9]{0,2})?$/";
+    $combo="/^([0-9]{1,4}(\.[0-9]{0,2})*)\s+([a-zA-Z]+|([a-zA-Z]+\s+[a-zA-Z]+)+)$/";
+    $errors=[];
+    if (!preg_match($letters, $record['foodItem'])){
+    $errors['foodItem']="The \"Food Item\" field must contain letters \"Aa-Zz!\""; 
+    }
+    if (!preg_match($letters, $record['foodGroup'])){
+    $errors['foodGroup']="The \"Food Group\" field must contain letters \"Aa-Zz!\"";
+    }
+    if (!preg_match($combo, $record['servingSize'])){
+    $errors['servingSize']="The \"Serving Size\" field must contain numbers 0-9 followed by letters \"Aa-Zz!\"";
+    }
+    if(!preg_match($numbers, $record['calories'])){
+    $errors['calories']="The \"Calories\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['totalFat_g'])){
+    $errors['totalFat_g']="The \"Total Fat\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['cholesterol_mg'])){
+    $errors['cholesterol_mg']="The \"Cholesterol\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['sodium_mg'])){
+    $errors['sodium_mg']="The \"Sodium\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['potassium_mg'])){
+    $errors['potassium_mg']="The \"Potassium\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['totalCarbohydrate_g'])){
+    $errors['totalCarbohydrate_g']="The \"Total Carbohydrate\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(!preg_match($numbers, $record['protein_g'])){
+    $errors['protein_g']="The \"Protein\" field must contain numbers 0-9 or decimals in the format of 0.00!";
+    }
+    if(empty($errors)){
+      execute_sql($sql);  
+    }else{
+        //page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/new.php');
+        include("header.php");
+        echo "<h3>Edit Item</h3>";
+        validation_error($errors);
+        //(".$foodGroup." previously selected)
+        echo "<form action=\"create.php\" method=\"post\">
+Food Item: <input type=\"text\" name=\"foodItem\" value=\"".$record['foodItem']."\"/><br>
+Food Group: <select name=\"foodGroup\"value=\"\">
+            <option value=\"\">Select...</option>
+            <option value=\"Fruit\">Fruit</option>
+            <option value=\"Vegetable\">Vegetable</option>
+            <option value=\"Grain\">Grain</option>
+            <option value=\"Protein\">Protein</option>
+            <option value=\"Dairy\">Dairy</option>
+            <option value=\"Recipe\">Recipe</option>
+            </select><br>
+Serving Size: <input type=\"text\" name=\"servingSize\" value=\"".$record['servingSize']."\"/><br>
+Calories: <input type=\"text\" name=\"calories\" value=\"".$record['calories']."\"/><br>
+Total Fat (g): <input type=\"text\" name=\"totalFat_g\" value=\"".$record['totalFat_g']."\"/><br>
+Cholesterol (mg): <input type=\"text\" name=\"cholesterol_mg\" value=\"".$record['cholesterol_mg']."\"/><br>
+Sodium (mg): <input type=\"text\" name=\"sodium_mg\" value=\"".$record['sodium_mg']."\"/><br>
+Potassium (mg): <input type=\"text\" name=\"potassium_mg\" value=\"".$record['potassium_mg']."\"/><br>
+Total Carbohydrates (g): <input type=\"text\" name=\"totalCarbohydrate_g\" value=\"".$record['totalCarbohydrate_g']."\"/><br>
+Protein (g): <input type=\"text\" name=\"protein_g\" value=\"".$record['protein_g']."\"/><br>
+Source: <input type=\"text\" name=\"website\" value=\"".$record['website']."\"/><br>
+<input type=\"submit\" name=\"submit\" value=\"Create\"/></form>";
+      
+    }
+}
+    
+function insert_detection($submit, $record){
+    if(isset($submit)){
+        insert_item($record);
+    }
+}  
+
+function edit_detection($submit, $id, $record){
+    if(isset($submit)){
+       edit_item($id, $record); 
+    }
+}
+
+//CRUD functions
+
+function insert_item($record){
+    global $mysqli;
+    $sql="INSERT INTO nutritionFactList(foodItem, foodGroup, servingSize, calories, totalFat_g, cholesterol_mg, sodium_mg, potassium_mg, totalCarbohydrate_g, protein_g, website) VALUES(";
+    $sql .="'".db_escape($mysqli, $record['foodItem'])."', ";
+    $sql .="'".db_escape($mysqli, $record['foodGroup'])."', ";
+    $sql .="'".db_escape($mysqli, $record['servingSize'])."', ";
+    $sql .="'".db_escape($mysqli, $record['calories'])."', ";
+    $sql .="'".db_escape($mysqli, $record['totalFat_g'])."', ";
+    $sql .="'".db_escape($mysqli, $record['cholesterol_mg'])."', ";
+    $sql .="'".db_escape($mysqli, $record['sodium_mg'])."', ";
+    $sql .="'".db_escape($mysqli, $record['potassium_mg'])."', ";
+    $sql .="'".db_escape($mysqli, $record['totalCarbohydrate_g'])."', ";
+    $sql .="'".db_escape($mysqli, $record['protein_g'])."', ";
+    $sql .="'".db_escape($mysqli, $record['website'])."');";
+    validate_item($record, $sql);
+}
+function edit_item($id, $record){
+    global $mysqli;
+    $sql ="UPDATE nutritionFactList SET foodItem='".db_escape($mysqli, $record['foodItem'])."', ";
+    $sql .="foodGroup='".db_escape($mysqli, $record['foodGroup'])."', ";
+    $sql .="servingSize='".db_escape($mysqli, $record['servingSize'])."', ";
+    $sql .="calories='".db_escape($mysqli, $record['calories'])."', ";
+    $sql .="totalFat_g='".db_escape($mysqli, $record['totalFat_g'])."', ";
+    $sql .="cholesterol_mg='".db_escape($mysqli, $record['cholesterol_mg'])."', ";
+    $sql .="sodium_mg='".db_escape($mysqli, $record['sodium_mg'])."', ";
+    $sql .="potassium_mg='".db_escape($mysqli, $record['potassium_mg'])."', ";
+    $sql .="totalCarbohydrate_g='".db_escape($mysqli, $record['totalCarbohydrate_g'])."', ";
+    $sql .="protein_g='".db_escape($mysqli, $record['protein_g'])."', ";
+    $sql .="website='".db_escape($mysqli, $record['website'])."' ";
+    $sql .="WHERE id='".db_escape($mysqli, $id)."' ";
+    $sql .="LIMIT 1;";
+    validate_item($record, $sql);
+}
+function delete_item($id){
+    global $mysqli;
+    $sql ="DELETE FROM nutritionFactList WHERE id='".db_escape($mysqli, $id)."' ";
+    $sql .="LIMIT 1;";
+    $res = mysqli_query($mysqli, $sql);
+    if($res){
+    page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php');
+    }else{
+    echo '<script language="javascript">';
+    echo 'alert("Delete attempt failed. Please try again.")';
+    echo '</script>';
+    page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/edit.php');
+    }
+}
+function delete_choice($id, $yesOrNo){
+    if(isset($yesOrNo) && $yesOrNo == "Delete"){
+        delete_item($id);
+    }elseif(isset($yesOrNo) && $yesOrNo == "Cancel")
+    page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php');
+}
+
+function orderBy($column, $columnAsc, $columnDesc){
+    global $mysqli;
+    if(isset($columnAsc)){
+    require_once("functions.php");
+    include("header.php");
+    $sql ="SELECT * FROM nutritionFactList ORDER BY ".db_escape($mysqli, $column)." ASC;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        echo "<nav>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php\">All</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Fruit\">Fruit</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Vegetable\">Vegetable</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Grain\">Grain</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Protein\">Protein</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Dairy\">Dairy</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Recipe\">Recipe</a>
+        </li>
+        </nav>
+        <table><tr>
+        <th>Food Item: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            <td>".$row["website"]. "</td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+            </td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+            </td>
+            </tr>";
+        }
+    
+            
+        echo "</table>
+        <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/new.php\">Add New Item</a><br>
+        </div>
+        <div class=\"container2\">
+        <button onclick=\"calculate()\" title=\"Calculate\">Calculate</button>
+        <script>
+        function calculate(){
+            window.location.href='http://www.thechrisnutterhub.com/nutrition_facts/foodSum/foodSumIndex.php';
+        };
+        </script>";
+    }else{
+        echo "No such list exists.";
+    }
+    }elseif(isset($columnDesc)){
+    require_once("functions.php");
+    include("header.php");
+    $sql ="SELECT * FROM nutritionFactList ORDER BY ".db_escape($mysqli, $column)." DESC;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        echo "<nav>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php\">All</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Fruit\">Fruit</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Vegetable\">Vegetable</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Grain\">Grain</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Protein\">Protein</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Dairy\">Dairy</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Recipe\">Recipe</a>
+        </li>
+        </nav>
+        <table><tr>
+        <th>Food Item: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            <td>".$row["website"]. "</td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+            </td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+            </td>
+            </tr>";
+        }
+    
+            
+        echo "</table>
+        <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/new.php\">Add New Item</a>";
+    }else{
+        echo "No such list exists.";
+    }
+    }else{
+        page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php');
+    
+        
+    }
+}
+
+function foodGroupOrderBy($column, $columnAsc, $columnDesc){
+    global $mysqli;
+    if(isset($columnAsc)){
+    require_once("functions.php");
+    include("header.php");
+    $foodGroup= $_GET['foodGroup'];
+    $sql ="SELECT * FROM nutritionFactList WHERE foodGroup='".db_escape($mysqli, $foodGroup)."' ORDER BY ".db_escape($mysqli, $column)." ASC;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        echo "<nav>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php\">All</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Fruit\">Fruit</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Vegetable\">Vegetable</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Grain\">Grain</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Protein\">Protein</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Dairy\">Dairy</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Recipe\">Recipe</a>
+        </li>
+        </nav>
+        <table><tr>
+        <th>Food Item: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            <td>".$row["website"]. "</td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+            </td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+            </td>
+            </tr>";
+        }
+    
+            
+        echo "</table>
+        <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/new.php\">Add New Item</a>";
+    }else{
+        echo "No such list exists.";
+    }
+    }elseif(isset($columnDesc)){
+    require_once("functions.php");
+    include("header.php");
+    $foodGroup= $_GET['foodGroup'];
+    $sql ="SELECT * FROM nutritionFactList WHERE foodGroup='".db_escape($mysqli, $foodGroup)."' ORDER BY ".db_escape($mysqli, $column)." DESC;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        echo "<nav>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php\">All</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Fruit\">Fruit</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Vegetable\">Vegetable</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Grain\">Grain</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Protein\">Protein</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Dairy\">Dairy</a>
+        </li>
+        <li>
+            <a href=\"http://www.thechrisnutterhub.com/nutrition_facts/foodGroup.php?foodGroup=Recipe\">Recipe</a>
+        </li>
+        </nav>
+        <table><tr>
+        <th>Food Item: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"foodGroupOrderBy.php?foodGroup=".h(u($foodGroup))."\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            <td>".$row["website"]. "</td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+            </td>
+            <td>
+            <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+            </td>
+            </tr>";
+        }
+    
+            
+        echo "</table>
+        <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/new.php\">Add New Item</a>";
+    }else{
+        echo "No such list exists.";
+    }
+    }else{
+        page_redirect('http://www.thechrisnutterhub.com/nutrition_facts/nutrition_fact_list.php');
+    
+        
+    }
+}
+function checked($ids){
+    include("foodSumHeader.php");
+    global $mysqli;
+    $sql.="SELECT foodItem, foodGroup, servingSize, calories, totalFat_g, cholesterol_mg, sodium_mg, potassium_mg, totalCarbohydrate_g, protein_g FROM nutritionFactList WHERE id IN (".db_escape($mysqli, $ids)."); "; 
+    $res = mysqli_query($mysqli, $sql);
+
+    if ($res->num_rows>0){
+       display_checked($ids, $res); 
+    }else{
+        echo "Error occurred";
+    }
+    
+}
+function display_checked($ids, $res){
+    global $mysqli;
+        echo "<table><tr>
+        <th>Food Item: </th>
+        <th>Food Group: </th>
+        <th>Serving Size: </th>
+        <th>Calories: </th>
+        <th>Total Fat (g): </th>
+        <th>Cholesterol (mg): </th>
+        <th>Sodium (mg): </th>
+        <th>Potassium (mg): </th>
+        <th>Total Carbohydrates (g): </th>
+        <th>Protein (g): </th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            echo "<tr>
+            <td>".$row["foodItem"]. "</td>
+            <td>".$row["foodGroup"]. "</td>
+            <td>".$row["servingSize"]. "</td>
+            <td>".$row["calories"]. "</td>
+            <td>".$row["totalFat_g"]. "</td>
+            <td>".$row["cholesterol_mg"]. "</td>
+            <td>".$row["sodium_mg"]. "</td>
+            <td>".$row["potassium_mg"]. "</td>
+            <td>".$row["totalCarbohydrate_g"]."</td>
+            <td>".$row["protein_g"]."</td>
+            </tr>";
+        }
+        echo "</table>";
+        $sumsql="SELECT SUM(calories), SUM(totalFat_g), SUM(cholesterol_mg), SUM(sodium_mg), SUM(potassium_mg), SUM(totalCarbohydrate_g), SUM(protein_g) FROM nutritionFactList WHERE id IN (".$ids."); ";
+       $sumres= mysqli_query($mysqli, $sumsql);
+        if($sumres){
+            echo "<table><tr><th>Nutritional Value Totals: </th></tr>
+        <th>Calories: </th>
+        <th>Total Fat (g): </th>
+        <th>Cholesterol (mg): </th>
+        <th>Sodium (mg): </th>
+        <th>Potassium (mg): </th>
+        <th>Total Carbohydrates (g): </th>
+        <th>Protein (g): </th>
+        </tr>";
+            while($row=$sumres->fetch_assoc()){
+                echo "<tr>
+                <td>".$row["SUM(calories)"]. "</td>
+            <td>".$row["SUM(totalFat_g)"]. "</td>
+            <td>".$row["SUM(cholesterol_mg)"]. "</td>
+            <td>".$row["SUM(sodium_mg)"]. "</td>
+            <td>".$row["SUM(potassium_mg)"]. "</td>
+            <td>".$row["SUM(totalCarbohydrate_g)"]."</td>
+            <td>".$row["SUM(protein_g)"]."</td></tr>";
+            }
+            echo "</table>
+            <form action=\"clearForm.php\" method=\"post\"><input type=\"submit\" name=\"clearForm\" value=\"Reset\"></form>";
+        }else{
+            echo "Error here";
+        }
+    
+    include("../footer.php");
+    
+}
+function show_checks($check_id, $group, $index){
+	global $mysqli;
+	require_once("../functions.php");
+	include("foodSumHeader.php");
+	if(isset($group)){
+		$sql="SELECT * FROM nutritionFactList;";
+		$res = mysqli_query($mysqli, $sql);
+		if ($res->num_rows>0){
+        	echo "<form action=\"foodSumPost.php\" method=\"post\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"index\" type=\"submit\" value=\"All\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Fruit\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Vegetable\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Grain\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Protein\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Dairy\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Recipe\">
+			<table><tr>
+        			<th> Select: </th>
+        			<th>Food Item: </th>
+        			<th>Food Group: </th>
+        			<th>Serving Size: </th>
+        			<th>Calories: </th>
+        			<th>Total Fat (g): </th>
+        			<th>Cholesterol (mg): </th>
+        			<th>Sodium (mg): </th>
+        			<th>Potassium (mg): </th>
+        			<th>Total Carbohydrates (g): </th>
+        			<th>Protein (g): </th>
+        			</tr>";
+			while($row=$res->fetch_assoc()){
+				if($row["foodGroup"]===$group){
+					echo "<tr>";
+						if(in_array($row["id"], $check_id, true)){
+							echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\" checked></input></td>";
+						}else{
+							echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+						}
+						echo "<td>".$row["foodItem"]. "</td>
+						<td>".$row["foodGroup"]. "</td>
+						<td>".$row["servingSize"]. "</td>
+						<td>".$row["calories"]. "</td>
+						<td>".$row["totalFat_g"]. "</td>
+						<td>".$row["cholesterol_mg"]. "</td>
+						<td>".$row["sodium_mg"]. "</td>
+						<td>".$row["potassium_mg"]. "</td>
+						<td>".$row["totalCarbohydrate_g"]."</td>
+						<td>".$row["protein_g"]."</td>
+						</tr>";
+				}else{
+					echo "<tr hidden>";
+					if(in_array($row["id"], $check_id, true)){
+						echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\" checked></input></td>";
+					}else{
+						echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+					}
+					echo "<td>".$row["foodItem"]. "</td>
+					<td>".$row["foodGroup"]. "</td>
+					<td>".$row["servingSize"]. "</td>
+					<td>".$row["calories"]. "</td>
+					<td>".$row["totalFat_g"]. "</td>
+					<td>".$row["cholesterol_mg"]. "</td>
+					<td>".$row["sodium_mg"]. "</td>
+					<td>".$row["potassium_mg"]. "</td>
+					<td>".$row["totalCarbohydrate_g"]."</td>
+					<td>".$row["protein_g"]."</td>
+					</tr>";
+			    }
+			}
+        			echo "</table>
+        			<input type=\"submit\" value=\"Submit\">
+        			</form>";
+					
+	    }else{
+        			echo "No such list exists.";
+    		}
+    		include("../footer.php");
+
+	}elseif(isset($index)){
+	    $sql="SELECT * FROM nutritionFactList;";
+		$res = mysqli_query($mysqli, $sql);
+		if ($res->num_rows>0){
+        			echo "<form action=\"foodSumPost.php\" method=\"post\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"index\" type=\"submit\" value=\"All\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Fruit\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Vegetable\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Grain\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Protein\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Dairy\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Recipe\">
+			<table><tr>
+        			<th> Select: </th>
+        			<th>Food Item: </th>
+        			<th>Food Group: </th>
+        			<th>Serving Size: </th>
+        			<th>Calories: </th>
+        			<th>Total Fat (g): </th>
+        			<th>Cholesterol (mg): </th>
+        			<th>Sodium (mg): </th>
+        			<th>Potassium (mg): </th>
+        			<th>Total Carbohydrates (g): </th>
+        			<th>Protein (g): </th>
+        			</tr>";
+			while($row=$res->fetch_assoc()){
+				echo "<tr>";
+				if(in_array($row["id"], $check_id, true)){
+					echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\" checked></input></td>";
+				}else{
+					echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+				}
+				echo "<td>".$row["foodItem"]. "</td>
+				<td>".$row["foodGroup"]. "</td>
+				<td>".$row["servingSize"]. "</td>
+				<td>".$row["calories"]. "</td>
+				<td>".$row["totalFat_g"]. "</td>
+				<td>".$row["cholesterol_mg"]. "</td>
+				<td>".$row["sodium_mg"]. "</td>
+				<td>".$row["potassium_mg"]. "</td>
+				<td>".$row["totalCarbohydrate_g"]."</td>
+				<td>".$row["protein_g"]."</td>
+				</tr>";	
+				
+			}
+        				echo "</table>
+        				<input type=\"submit\" value=\"Submit\">
+        				</form>";
+			
+		}else{
+        			echo "No such list exists.";
+    		}
+    		include("../footer.php");
+
+	}
+}
+function show_cat($group, $index){
+	global $mysqli;
+	require_once("../functions.php");
+	include("foodSumHeader.php");
+	if(isset($group)){
+		$sql="SELECT * FROM nutritionFactList;";
+		$res = mysqli_query($mysqli, $sql);
+		if ($res->num_rows>0){
+        	echo "<form action=\"foodSumPost.php\" method=\"post\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"index\" type=\"submit\" value=\"All\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Fruit\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Vegetable\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Grain\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Protein\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Dairy\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Recipe\">
+			<table><tr>
+        			<th> Select: </th>
+        			<th>Food Item: </th>
+        			<th>Food Group: </th>
+        			<th>Serving Size: </th>
+        			<th>Calories: </th>
+        			<th>Total Fat (g): </th>
+        			<th>Cholesterol (mg): </th>
+        			<th>Sodium (mg): </th>
+        			<th>Potassium (mg): </th>
+        			<th>Total Carbohydrates (g): </th>
+        			<th>Protein (g): </th>
+        			</tr>";
+			while($row=$res->fetch_assoc()){
+				if($row["foodGroup"]===$group){
+					echo "<tr>
+						  <td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+						
+						echo "<td>".$row["foodItem"]. "</td>
+						<td>".$row["foodGroup"]. "</td>
+						<td>".$row["servingSize"]. "</td>
+						<td>".$row["calories"]. "</td>
+						<td>".$row["totalFat_g"]. "</td>
+						<td>".$row["cholesterol_mg"]. "</td>
+						<td>".$row["sodium_mg"]. "</td>
+						<td>".$row["potassium_mg"]. "</td>
+						<td>".$row["totalCarbohydrate_g"]."</td>
+						<td>".$row["protein_g"]."</td>
+						</tr>";
+				}else{
+					echo "<tr hidden><td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+					
+					echo "<td>".$row["foodItem"]. "</td>
+					<td>".$row["foodGroup"]. "</td>
+					<td>".$row["servingSize"]. "</td>
+					<td>".$row["calories"]. "</td>
+					<td>".$row["totalFat_g"]. "</td>
+					<td>".$row["cholesterol_mg"]. "</td>
+					<td>".$row["sodium_mg"]. "</td>
+					<td>".$row["potassium_mg"]. "</td>
+					<td>".$row["totalCarbohydrate_g"]."</td>
+					<td>".$row["protein_g"]."</td>
+					</tr>";
+			    }
+			}
+        			echo "</table>
+        			<input type=\"submit\" value=\"Submit\">
+        			</form>";
+					
+	    }else{
+        			echo "No such list exists.";
+    		}
+    		include("../footer.php");
+
+	}elseif(isset($index)){
+	    $sql="SELECT * FROM nutritionFactList;";
+		$res = mysqli_query($mysqli, $sql);
+		if ($res->num_rows>0){
+        			echo "<form action=\"foodSumPost.php\" method=\"post\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"index\" type=\"submit\" value=\"All\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Fruit\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Vegetable\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Grain\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Protein\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Dairy\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Recipe\">
+			<table><tr>
+        			<th> Select: </th>
+        			<th>Food Item: </th>
+        			<th>Food Group: </th>
+        			<th>Serving Size: </th>
+        			<th>Calories: </th>
+        			<th>Total Fat (g): </th>
+        			<th>Cholesterol (mg): </th>
+        			<th>Sodium (mg): </th>
+        			<th>Potassium (mg): </th>
+        			<th>Total Carbohydrates (g): </th>
+        			<th>Protein (g): </th>
+        			</tr>";
+			while($row=$res->fetch_assoc()){
+				echo "<tr>";
+				echo "<td><input formmethod=\"post\" type=\"checkbox\" name=\"check_list[]\" value=\"".$row["id"]."\"></input></td>";   
+				echo "<td>".$row["foodItem"]. "</td>
+				<td>".$row["foodGroup"]. "</td>
+				<td>".$row["servingSize"]. "</td>
+				<td>".$row["calories"]. "</td>
+				<td>".$row["totalFat_g"]. "</td>
+				<td>".$row["cholesterol_mg"]. "</td>
+				<td>".$row["sodium_mg"]. "</td>
+				<td>".$row["potassium_mg"]. "</td>
+				<td>".$row["totalCarbohydrate_g"]."</td>
+				<td>".$row["protein_g"]."</td>
+				</tr>";	
+				
+			}
+        				echo "</table>
+        				<input type=\"submit\" value=\"Submit\">
+        				</form>";
+			}
+			
+		}else{
+        			echo "No such list exists.";
+    		}
+    		include("../footer.php");
+
+	}
+function search($searchTerm){
+    global $mysqli;
+    require_once("functions.php");
+    include("header.php");
+    $sql ="SELECT * FROM nutritionFactList;";
+    $res = mysqli_query($mysqli, $sql);
+    
+    if ($res->num_rows>0){
+        	echo "<form action=\"foodSumPost.php\" method=\"post\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"index\" type=\"submit\" value=\"All\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Fruit\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Vegetable\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Grain\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Protein\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Dairy\">
+			<input formaction=\"checkPostCat.php\" formmethod=\"post\" name=\"group\" type=\"submit\" value=\"Recipe\">
+			<table><tr>
+        <th>Food Item: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodItemAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodItemDesc\" value=\"&#8595;\"/></form></th>
+        <th>Food Group: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"foodGroupAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"foodGroupDesc\" value=\"&#8595;\"/></form></th>
+        <th>Serving Size: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"servingSizeAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"servingSizeDesc\" value=\"&#8595;\"/></form></th>
+        <th>Calories: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"caloriesAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"caloriesDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Fat (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalFatAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalFatDesc\" value=\"&#8595;\"/></form></th>
+        <th>Cholesterol (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"cholesterolAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"cholesterolDesc\" value=\"&#8595;\"/></form></th>
+        <th>Sodium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sodiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sodiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Potassium (mg): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"potassiumAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"potassiumDesc\" value=\"&#8595;\"/></form></th>
+        <th>Total Carbohydrates (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"totalCarbAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"totalCarbDesc\" value=\"&#8595;\"/></form></th>
+        <th>Protein (g): <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"proteinAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"proteinDesc\" value=\"&#8595;\"/></form></th>
+        <th>Source: <form action=\"orderBy.php\" method=\"post\"><input type=\"submit\" name=\"sourceAsc\" value=\"&#8593;\"/><input type=\"submit\" name=\"sourceDesc\" value=\"&#8595;\"/></form></th>
+        <th>&nbsp;</th>
+        <th>&nbsp;</th>
+        </tr>";
+        while($row=$res->fetch_assoc()){
+            $userInput=strtolower($searchTerm);
+            $existingTerm=strtolower($row["foodItem"]);
+            if($userInput == $existingTerm){
+                echo "<tr>
+                <td>".$row["foodItem"]. "</td>
+                <td>".$row["foodGroup"]. "</td>
+                <td>".$row["servingSize"]. "</td>
+                <td>".$row["calories"]. "</td>
+                <td>".$row["totalFat_g"]. "</td>
+                <td>".$row["cholesterol_mg"]. "</td>
+                <td>".$row["sodium_mg"]. "</td>
+                <td>".$row["potassium_mg"]. "</td>
+                <td>".$row["totalCarbohydrate_g"]."</td>
+                <td>".$row["protein_g"]."</td>
+                <td>".$row["website"]. "</td>
+                <td>
+                <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/edit.php?id=".h(u($row['id'])). "\">Edit</a>
+                </td>
+                <td>
+                <a class=\"action\" href=\"http://www.thechrisnutterhub.com/nutrition_facts/delete.php?id=".h(u($row['id'])). "\">Delete</a>
+                </td>
+                </tr>";
+            }else{
+                echo "The term '".$searchTerm."' was not found.";
+            }
+        }
+        echo "</table>
+                </form>";
+    }else{
+        echo "No such list exists.";
+    }
+}
+?>

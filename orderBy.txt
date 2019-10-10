@@ -1,0 +1,94 @@
+<?php require_once("functions.php"); ?>
+<?php
+$servername="";
+$dbname="";
+$dbusername="";
+$dbpassword="";
+    
+    
+    
+$mysqli= new mysqli($servername, $dbusername, $dbpassword, $dbname);
+//Make sure the arguments in the above function are in this specific order!!
+    
+if($mysqli->connect_errno){
+    echo "Failed to connect to the database: (". $mysqli->connect_errno. ")" . $mysqli->connect_error;
+    mysqli_close($mysqli);
+    exit;
+}
+$foodItem="foodItem";
+$foodItemAsc=$_POST['foodItemAsc'];
+$foodItemDesc=$_POST['foodItemDesc'];
+if(isset($foodItemAsc) || isset($foodItemDesc)){
+  orderBy($foodItem, $foodItemAsc, $foodItemDesc);  
+}
+
+$foodGroup="foodGroup";
+$foodGroupAsc=$_POST['foodGroupAsc'];
+$foodGroupDesc=$_POST['foodGroupDesc'];
+if(isset($foodGroupAsc) || isset($foodGroupDesc)){
+  orderBy($foodGroup, $foodGroupAsc, $foodGroupDesc);  
+}
+
+$servingSize="servingSize";
+$servingSizeAsc=$_POST['servingSizeAsc'];
+$servingSizeDesc=$_POST['servingSizeDesc'];
+if(isset($servingSizeAsc) || isset($servingSizeDesc)){
+  orderBy($servingSize, $servingSizeAsc, $servingSizeDesc);  
+}
+
+$calories="calories";
+$caloriesAsc=$_POST['caloriesAsc'];
+$caloriesDesc=$_POST['caloriesDesc'];
+if(isset($caloriesAsc) || isset($caloriesDesc)){
+  orderBy($calories, $caloriesAsc, $caloriesDesc);  
+}
+
+$totalFat_g="totalFat_g";
+$totalFatAsc=$_POST['totalFatAsc'];
+$totalFatDesc=$_POST['totalFatDesc'];
+if(isset($totalFatAsc) || isset($totalFatDesc)){
+  orderBy($totalFat_g, $totalFatAsc, $totalFatDesc);  
+}
+
+$cholesterol_mg="cholesterol_mg";
+$cholesterolAsc=$_POST['cholesterolAsc'];
+$cholesterolDesc=$_POST['cholesterolDesc'];
+if(isset($cholesterolAsc) || isset($cholesterolDesc)){
+    orderBy($cholesterol_mg, $cholesterolAsc, $cholesterolDesc);
+}
+
+$sodium_mg="sodium_mg";
+$sodiumAsc=$_POST['sodiumAsc'];
+$sodiumDesc=$_POST['sodiumDesc'];
+if(isset($sodiumAsc) || isset($sodiumDesc)){
+    orderBy($sodium_mg, $sodiumAsc, $sodiumDesc);
+}
+
+$potassium_mg="potassium_mg";
+$potassiumAsc=$_POST['potassiumAsc'];
+$potassiumDesc=$_POST['potassiumDesc'];
+if(isset($potassiumAsc) || isset($potassiumDesc)){
+    orderBy($potassium_mg, $potassiumAsc, $potassiumDesc);
+}
+
+$totalCarbohydrate_g="totalCarbohydrate_g";
+$totalCarbAsc=$_POST['totalCarbAsc'];
+$totalCarbDesc=$_POST['totalCarbDesc'];
+if(isset($totalCarbAsc) || isset($totalCarbDesc)){
+    orderBy($totalCarbohydrate_g, $totalCarbAsc, $totalCarbDesc);
+}
+
+$protein_g="protein_g";
+$proteinAsc=$_POST['proteinAsc'];
+$proteinDesc=$_POST['proteinDesc'];
+if(isset($proteinAsc) || isset($proteinDesc)){
+    orderBy($protein_g, $proteinAsc, $proteinDesc);
+}
+
+$website="website";
+$sourceAsc=$_POST['sourceAsc'];
+$sourceDesc=$_POST['sourceDesc'];
+if(isset($sourceAsc) || isset($sourceDesc)){
+    orderBy($website, $sourceAsc, $sourceDesc);
+}
+?>

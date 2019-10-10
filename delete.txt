@@ -1,0 +1,45 @@
+<?php include("header.php"); 
+require_once("functions.php");?>
+<?php
+
+$servername="";
+$dbname="";
+$dbusername="";
+$dbpassword="";
+
+$id= $_GET['id'];
+if($id==null){
+    $id='1';
+}    
+
+$mysqli= new mysqli($servername, $dbusername, $dbpassword, $dbname);
+//Make sure the arguments in the above function are in this specific order!!
+    
+if($mysqli->connect_errno){
+    echo "Failed to connect to the database: (". $mysqli->connect_errno. "//)" . $mysqli->connect_error;
+    mysqli_close($mysqli);
+    exit;
+}
+$sql ="SELECT * FROM nutritionFactList WHERE id='".db_escape($mysqli, h($id))."';";
+$res = mysqli_query($mysqli, $sql);
+$row=$res->fetch_assoc();
+echo "<h3>Delete \"".h($row["foodItem"])."\"</h3><br>";
+echo "<p>Are you sure you want to delete the following record?</p><br>
+        <p>".h($row["foodItem"])."</p><br>
+        <p>".h($row["foodGroup"])."</p><br>
+        <p>".h($row["servingSize"])."</p><br>
+        <p>".h($row["calories"])."</p><br>
+        <p>".h($row["totalFat_g"])."</p><br>
+        <p>".h($row["cholesterol_mg"])."</p><br>
+        <p>".h($row["sodium_mg"])."</p><br>
+        <p>".h($row["potassium_mg"])."</p><br>
+        <p>".h($row["totalCarbohydrate_g"])."</p><br>
+        <p>".h($row["protein_g"])."</p><br>
+        <p>".h($row["website"])."</p><br>
+        <form method=\"post\">
+        <input formaction=\"postDelete.php?id=".h(u($id))."\" type=\"submit\" name=\"yesOrNo\" value=\"Delete\"><br>
+        <input formaction=\"postDelete.php?id=".h(u($id))."\" type=\"submit\" name=\"yesOrNo\" value=\"Cancel\"><br>
+        </form>";
+
+?>
+<?php include("footer.php"); ?>

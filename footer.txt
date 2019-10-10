@@ -1,0 +1,18 @@
+<?php
+
+if($res){
+    $res->close();
+}
+
+if($mysqli){
+    $mysqli->close();
+}
+
+$c=date('Y');
+echo "</div>
+<div class=\"container4\">
+<p>&copy; Christopher J Nutter, ".$c."</p>
+</div>
+</body>
+</html>";
+?>
